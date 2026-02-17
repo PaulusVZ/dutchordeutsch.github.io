@@ -6,6 +6,7 @@
     <title>Dutch or German? - Survival</title>
     <style>
         body {
+            <audio id="fail-sound" src="fail.mp3" preload="auto"></audio>
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
             background: #f4f4f4;
@@ -162,7 +163,12 @@
                 document.getElementById('streak').innerText = "STREAK: " + score;
                 nextRound();
             } else {
-                // Game Over
+                // PLAY THE SOUND HERE
+                const sound = document.getElementById('fail-sound');
+                sound.currentTime = 0; // Reset sound to start if they fail quickly
+                sound.play();
+        
+                // Show "NEIN NEIN NEIN!"
                 document.getElementById('final-score').innerText = score;
                 document.getElementById('overlay').style.display = 'flex';
             }
@@ -201,5 +207,6 @@
     </script>
 </body>
 </html>
+
 
 
