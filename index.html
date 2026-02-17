@@ -58,7 +58,7 @@
         #overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.4); /* Subtle darkening */
+            background: rgba(0,0,0,0.4); 
             display: none;
             flex-direction: column;
             justify-content: center;
@@ -119,28 +119,37 @@
     <script>
         let score = 0;
         let currentAnswer = "";
-
-        let nextImageObj = new Image(); // This "pre-downloads" the next image
+        let pendingAnswer = ""; 
+        let nextImageObj = new Image();
 
         function nextRound() {
             document.getElementById('overlay').style.display = 'none';
             
-            // 1. If we already preloaded an image, use it!
+            // 1. Swap to the pre-loaded image
             if (nextImageObj.src) {
                 document.getElementById('person-img').src = nextImageObj.src;
+                currentAnswer = pendingAnswer;
+            } else {
+                // FIRST ROUND SETUP
+                const isDutch = Math.random() < 0.5;
+                const folder = isDutch ? "Nederlands/" : "German/";
+                const list = isDutch ? dutchImages : germanImages;
+                const randomImg = list[Math.floor(Math.random() * list.length)];
+                
+                document.getElementById('person-img').src = folder + randomImg;
+                currentAnswer = isDutch ? "Nederlands" : "German";
             }
-        
-            // 2. Pick the logic for the current answer based on the image we just displayed
-            // (You'll need to store the 'pending' answer from the preload step)
+
+            // 2. PRE-LOAD NEXT IMAGE IMMEDIATELY
+            const nextIsDutch = Math.random() < 0.5;
+            const nextFolder = nextIsDutch ? "Nederlands/" : "German/";
+            const nextList = nextIsDutch ? dutchImages : germanImages;
             
-            // 3. IMMEDIATELY start loading the NEXT image for the following round
-            const isDutch = Math.random() < 0.5;
-            const folder = isDutch ? "Nederlands/" : "German/";
-            const list = isDutch ? dutchImages : germanImages;
-            const randomImg = list[Math.floor(Math.random() * list.length)];
-            
-            nextImageObj.src = folder + randomImg; 
-            // This happens in the background!
+            if (nextList && nextList.length > 0) {
+                const nextRandomImg = nextList[Math.floor(Math.random() * nextList.length)];
+                nextImageObj.src = nextFolder + nextRandomImg;
+                pendingAnswer = nextIsDutch ? "Nederlands" : "German";
+            }
         }
 
         function check(guess) {
@@ -149,7 +158,6 @@
                 document.getElementById('streak').innerText = "STREAK: " + score;
                 nextRound();
             } else {
-                // Trigger Game Over
                 document.getElementById('final-score').innerText = score;
                 document.getElementById('overlay').style.display = 'flex';
             }
@@ -158,14 +166,12 @@
         function resetGame() {
             score = 0;
             document.getElementById('streak').innerText = "STREAK: 0";
+            nextImageObj.src = ""; 
             nextRound();
         }
 
-        // Start the game
+        // Start game
         window.onload = nextRound;
     </script>
 </body>
-
 </html>
-
-
