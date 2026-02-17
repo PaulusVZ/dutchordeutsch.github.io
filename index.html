@@ -120,21 +120,27 @@
         let score = 0;
         let currentAnswer = "";
 
-        function nextRound() {
-            // Hide overlay
-            document.getElementById('overlay').style.display = 'none';
+        let nextImageObj = new Image(); // This "pre-downloads" the next image
 
-            // Randomize Dutch vs German
+        function nextRound() {
+            document.getElementById('overlay').style.display = 'none';
+            
+            // 1. If we already preloaded an image, use it!
+            if (nextImageObj.src) {
+                document.getElementById('person-img').src = nextImageObj.src;
+            }
+        
+            // 2. Pick the logic for the current answer based on the image we just displayed
+            // (You'll need to store the 'pending' answer from the preload step)
+            
+            // 3. IMMEDIATELY start loading the NEXT image for the following round
             const isDutch = Math.random() < 0.5;
             const folder = isDutch ? "Dutch/" : "German/";
             const list = isDutch ? dutchImages : germanImages;
-
-            // Pick random image from the list
             const randomImg = list[Math.floor(Math.random() * list.length)];
-            currentAnswer = isDutch ? "Dutch" : "German";
-
-            // Update image source
-            document.getElementById('person-img').src = folder + randomImg;
+            
+            nextImageObj.src = folder + randomImg; 
+            // This happens in the background!
         }
 
         function check(guess) {
@@ -159,4 +165,5 @@
         window.onload = nextRound;
     </script>
 </body>
+
 </html>
