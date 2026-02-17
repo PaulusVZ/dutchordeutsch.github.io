@@ -114,7 +114,7 @@
         <button class="flag-btn" onclick="check('German')"><img src="germanflag.png" alt="German"></button>
     </div>
 
-    <script src="images.js"></script>
+<script src="images.js"></script>
 
     <script>
         let score = 0;
@@ -122,34 +122,38 @@
         let pendingAnswer = ""; 
         let nextImageObj = new Image();
 
+        // Separate function to pick a random image
+        function getRandomImage() {
+            const isDutch = Math.random() < 0.5;
+            const folder = isDutch ? "Nederlands/" : "German/";
+            const list = isDutch ? dutchImages : germanImages;
+            const randomImg = list[Math.floor(Math.random() * list.length)];
+            
+            return {
+                src: folder + randomImg,
+                answer: isDutch ? "Nederlands" : "German"
+            };
+        }
+
         function nextRound() {
             document.getElementById('overlay').style.display = 'none';
             
-            // 1. Swap to the pre-loaded image
-            if (nextImageObj.src) {
+            // 1. If we have a preloaded image ready, use it
+            if (nextImageObj.src && nextImageObj.complete) {
                 document.getElementById('person-img').src = nextImageObj.src;
                 currentAnswer = pendingAnswer;
             } else {
-                // FIRST ROUND SETUP
-                const isDutch = Math.random() < 0.5;
-                const folder = isDutch ? "Nederlands/" : "German/";
-                const list = isDutch ? dutchImages : germanImages;
-                const randomImg = list[Math.floor(Math.random() * list.length)];
-                
-                document.getElementById('person-img').src = folder + randomImg;
-                currentAnswer = isDutch ? "Nederlands" : "German";
+                // Fallback: Pick an image immediately if preload isn't ready
+                const choice = getRandomImage();
+                document.getElementById('person-img').src = choice.src;
+                currentAnswer = choice.answer;
             }
 
-            // 2. PRE-LOAD NEXT IMAGE IMMEDIATELY
-            const nextIsDutch = Math.random() < 0.5;
-            const nextFolder = nextIsDutch ? "Nederlands/" : "German/";
-            const nextList = nextIsDutch ? dutchImages : germanImages;
-            
-            if (nextList && nextList.length > 0) {
-                const nextRandomImg = nextList[Math.floor(Math.random() * nextList.length)];
-                nextImageObj.src = nextFolder + nextRandomImg;
-                pendingAnswer = nextIsDutch ? "Nederlands" : "German";
-            }
+            // 2. Start pre-loading the NEXT one for the next round
+            const nextChoice = getRandomImage();
+            nextImageObj = new Image(); // Create fresh object
+            nextImageObj.src = nextChoice.src;
+            pendingAnswer = nextChoice.answer;
         }
 
         function check(guess) {
@@ -158,6 +162,7 @@
                 document.getElementById('streak').innerText = "STREAK: " + score;
                 nextRound();
             } else {
+                // Game Over
                 document.getElementById('final-score').innerText = score;
                 document.getElementById('overlay').style.display = 'flex';
             }
@@ -166,12 +171,36 @@
         function resetGame() {
             score = 0;
             document.getElementById('streak').innerText = "STREAK: 0";
-            nextImageObj.src = ""; 
-            nextRound();
+            
+            // Generate a fresh image immediately for the restart
+            const freshStart = getRandomImage();
+            document.getElementById('person-img').src = freshStart.src;
+            currentAnswer = freshStart.answer;
+            
+            // Reset the overlay
+            document.getElementById('overlay').style.display = 'none';
+            
+            // Start preloading the round after this one
+            const nextChoice = getRandomImage();
+            nextImageObj.src = nextChoice.src;
+            pendingAnswer = nextChoice.answer;
         }
+
+        // Initialize the very first round
+        window.onload = function() {
+            const initial = getRandomImage();
+            document.getElementById('person-img').src = initial.src;
+            currentAnswer = initial.answer;
+            
+            // Preload the second round
+            const next = getRandomImage();
+            nextImageObj.src = next.src;
+            pendingAnswer = next.answer;
+        };
 
         // Start game
         window.onload = nextRound;
     </script>
 </body>
 </html>
+
